@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টাস্ক ইনকাম - ঘরে বসে আয় করুন</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --fg: #f1f5f9;
+            --fg-muted: #94a3b8;
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --border: #1e293b;
+            --gradient-1: #10b981;
+            --gradient-2: #059669;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans Bengali', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background: radial-gradient(circle at 20% 20%, var(--accent-glow) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
+        }
+
+        .floating-shapes {
+            position: fixed; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+
+        .shape {
+            position: absolute; border-radius: 50%; filter: blur(80px);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape-1 { width: 400px; height: 400px; background: var(--accent-glow); top: -100px; left: -100px; }
+        .shape-2 { width: 300px; height: 300px; background: rgba(59, 130, 246, 0.2); bottom: -50px; right: -50px; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; transition: all 0.3s ease;
+        }
+        .card:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: translateY(-2px); }
+
+        .card-static { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            color: white; padding: 12px 24px; border-radius: 12px;
+            font-weight: 600; border: none; cursor: pointer;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .btn-primary::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-primary:hover::before { left: 100%; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent-glow); }
+
+        .btn-secondary {
+            background: var(--bg-card); color: var(--fg); padding: 12px 24px;
+            border-radius: 12px; font-weight: 600; border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-secondary:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+
+        .btn-danger {
+            background: var(--danger); color: white; padding: 10px 20px;
+            border-radius: 10px; font-weight: 600; border: none; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
+
+        .input-field {
+            width: 100%; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px; color: var(--fg);
+            font-size: 15px; transition: all 0.3s ease; outline: none;
+        }
+        .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .input-field::placeholder { color: var(--fg-muted); }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 12px 16px; color: var(--fg-muted); cursor: pointer;
+            transition: all 0.3s ease; border-radius: 12px;
+        }
+        .nav-item:hover, .nav-item.active { color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+        .nav-item svg { width: 24px; height: 24px; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 24px; width: 90%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+            transform: scale(0.9) translateY(20px); transition: all 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
+        }
+        .balance-card::before {
+            content: ''; position: absolute; top: -50%; right: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+
+        .task-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; transition: all 0.3s ease;
+        }
+        .task-card:hover { border-color: var(--accent); transform: translateX(4px); }
+
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-slide-in { animation: slideIn 0.5s ease forwards; }
+        
+        @media (max-width: 768px) { .desktop-only { display: none !important; } }
+        @media (min-width: 769px) { .mobile-only { display: none !important; } }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 12px 16px; background: var(--bg); color: var(--fg-muted); font-weight: 600; font-size: 13px; }
+        .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .data-table tr:hover td { background: var(--bg-card-hover); }
+
+        .notice-banner {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 12px 16px;
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px; border-radius: 10px; font-weight: 500;
+            cursor: pointer; transition: all 0.3s ease; background: transparent;
+            border: none; color: var(--fg-muted);
+        }
+        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-btn:hover:not(.active) { background: var(--bg-card-hover); color: var(--fg); }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <!-- Auth Page -->
+    <div id="authPage" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8 animate-slide-in">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 mb-4 shadow-lg shadow-emerald-500/30">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">টাস্ক ইনকাম</h1>
+                <p class="text-gray-400">ঘরে বসে আয় করুন প্রতিদিন</p>
+            </div>
+
+            <div class="card-static p-6 animate-slide-in" style="animation-delay: 0.1s">
+                <div class="flex bg-gray-800/50 rounded-xl p-1 mb-6">
+                    <button class="tab-btn active flex-1" onclick="showAuthTab('login')">লগইন</button>
+                    <button class="tab-btn flex-1" onclick="showAuthTab('register')">রেজিস্ট্রেশন</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">ইউজারনেম / মোবাইল</label>
+                        <input type="text" id="loginUsername" class="input-field" placeholder="ইউজারনেম বা মোবাইল লিখুন" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">পাসওয়ার্ড</label>
+                        <input type="password" id="loginPassword" class="input-field" placeholder="পাসওয়ার্ড লিখুন" required>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">লগইন করুন</button>
+                </form>
+
+                <!-- Registration Form Updated -->
+                <form id="registerForm" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">পুরো নাম</label>
+                        <input type="text" id="regName" class="input-field" placeholder="আপনার নাম লিখুন" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">মোবাইল নম্বর</label>
+                        <input type="tel" id="regMobile" class="input-field" placeholder="০১XXXXXXXXX" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">পাসওয়ার্ড</label>
+                        <input type="password" id="regPassword" class="input-field" placeholder="পাসওয়ার্ড লিখুন" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">কনফার্ম পাসওয়ার্ড</label>
+                        <input type="password" id="regConfirmPassword" class="input-field" placeholder="পাসওয়ার্ড পুনরায় লিখুন" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">রেফারেল কোড (ঐচ্ছিক)</label>
+                        <input type="text" id="regReferral" class="input-field" placeholder="রেফারেল কোড থাকলে লিখুন">
+                    </div>
+                    <button type="submit" class="btn-primary w-full">একাউন্ট তৈরি করুন</button>
+                </form>
+
+                <div class="mt-6 pt-6 border-t border-gray-700">
+                    <button onclick="showAdminLogin()" class="btn-secondary w-full flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        এডমিন প্যানেলে প্রবেশ করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard (Shortened for brevity, structure remains similar) -->
+    <div id="userDashboard" class="hidden min-h-screen relative z-10">
+        <header class="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg">টাস্ক ইনকাম</h1>
+                        <p class="text-xs text-gray-400" id="welcomeUser">স্বাগতম</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn-secondary text-sm py-2 px-4">লগআউট</button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-6 pb-24">
+            <div id="userNotice" class="notice-banner mb-6 hidden">
+                <svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                </svg>
+                <p id="noticeTextUser" class="text-sm text-amber-200"></p>
+            </div>
+
+            <div class="balance-card mb-6 animate-slide-in">
+                <div class="relative z-10">
+                    <p class="text-white/80 text-sm mb-1">বর্তমান ব্যালেন্স</p>
+                    <h2 class="text-4xl font-bold text-white mb-4" id="userBalance">৳ ০.০০</h2>
+                    <div class="flex items-center gap-4 text-white/80 text-sm">
+                        <div>
+                            <span class="block text-xs">রেফারেল আয়</span>
+                            <span class="font-semibold text-white" id="referralEarning">৳ ০.০০</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs">মোট টাস্ক সম্পন্ন</span>
+                            <span class="font-semibold text-white" id="totalTasks">০</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-static p-4 mb-6 animate-slide-in" style="animation-delay: 0.1s">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-400 mb-1">আপনার রেফারেল কোড</p>
+                        <p class="text-lg font-bold text-emerald-400" id="referralCode">LOADING...</p>
+                    </div>
+                    <button onclick="copyReferral()" class="btn-secondary text-sm py-2 px-4">কপি করুন</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6 animate-slide-in" style="animation-delay: 0.2s">
+                <button onclick="showWithdrawModal()" class="card p-4 text-center">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="font-semibold">উইথড্র</p>
+                </button>
+                <button onclick="showUserSection('history')" class="card p-4 text-center">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    </div>
+                    <p class="font-semibold">হিস্টোরি</p>
+                </button>
+            </div>
+
+            <div id="userSections">
+                <div id="tasksSection" class="animate-slide-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold">টাস্ক তালিকা</h3>
+                        <span class="badge badge-success" id="taskCount">০ টি টাস্ক</span>
+                    </div>
+                    <div id="tasksList" class="space-y-4"></div>
+                </div>
+                <div id="historySection" class="hidden">
+                    <div class="flex items-center gap-4 mb-4">
+                        <button onclick="showUserSection('tasks')" class="btn-secondary text-sm py-2 px-4">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            ফিরে যান
+                        </button>
+                        <h3 class="text-xl font-bold">লেনদেন ইতিহাস</h3>
+                    </div>
+                    <div id="historyList" class="space-y-3"></div>
+                </div>
+            </div>
+        </main>
+        <nav class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800 z-50 mobile-only">
+            <div class="flex justify-around py-2">
+                <div class="nav-item active" onclick="showUserSection('tasks')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span class="text-xs">টাস্ক</span>
+                </div>
+                <div class="nav-item" onclick="showWithdrawModal()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="text-xs">উইথড্র</span>
+                </div>
+                <div class="nav-item" onclick="showUserSection('history')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="text-xs">হিস্টোরি</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden min-h-screen relative z-10">
+        <header class="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg">এডমিন প্যানেল</h1>
+                        <p class="text-xs text-gray-400">সম্পূর্ণ নিয়ন্ত্রণ</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn-secondary text-sm py-2 px-4">লগআউট</button>
+            </div>
+        </header>
+
+        <div class="sticky top-[73px] z-40 bg-gray-900/90 backdrop-blur-xl border-b border-gray-800 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex gap-2 min-w-max">
+                <button class="admin-tab btn-secondary text-sm py-2 px-4 active" onclick="showAdminSection('dashboard')" data-tab="dashboard">ড্যাশবোর্ড</button>
+                <button class="admin-tab btn-secondary text-sm py-2 px-4" onclick="showAdminSection('users')" data-tab="users">ইউজার ম্যানেজ</button>
+                <button class="admin-tab btn-secondary text-sm py-2 px-4" onclick="showAdminSection('tasks')" data-tab="tasks">টাস্ক ম্যানেজ</button>
+                <button class="admin-tab btn-secondary text-sm py-2 px-4" onclick="showAdminSection('withdraws')" data-tab="withdraws">উইথড্র</button>
+                <button class="admin-tab btn-secondary text-sm py-2 px-4" onclick="showAdminSection('notices')" data-tab="notices">নোটিশ</button>
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto px-4 py-6">
+            <div id="adminDashboardSection" class="admin-section">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="card p-5"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><div><p class="text-gray-400 text-sm">মোট ইউজার</p><p class="text-2xl font-bold" id="totalUsers">০</p></div></div></div>
+                    <div class="card p-5"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><div><p class="text-gray-400 text-sm">মোট টাস্ক</p><p class="text-2xl font-bold" id="totalTasksAdmin">০</p></div></div></div>
+                    <div class="card p-5"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><p class="text-gray-400 text-sm">অপেক্ষমান উইথড্র</p><p class="text-2xl font-bold" id="pendingWithdraws">০</p></div></div></div>
+                    <div class="card p-5"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center"><svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><p class="text-gray-400 text-sm">মোট উইথড্র</p><p class="text-2xl font-bold" id="totalWithdraws">৳০</p></div></div></div>
+                </div>
+                <div class="card-static p-6"><h3 class="text-lg font-bold mb-4">সাম্প্রতিক কার্যকলাপ</h3><div id="recentActivity" class="space-y-3"></div></div>
+            </div>
+
+            <div id="adminUsersSection" class="admin-section hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">ইউজার ম্যানেজমেন্ট</h3>
+                    <span class="badge badge-info" id="userCountBadge">০ জন ইউজার</span>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="searchUserInput" class="input-field" placeholder="নাম, ইউজারনেম বা মোবাইল দিয়ে সার্চ করুন..." oninput="searchUsers()">
+                </div>
+                <div class="card-static overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>নাম</th>
+                                    <th>ইউজারনেম</th>
+                                    <th>মোবাইল</th>
+                                    <th>ব্যালেন্স</th>
+                                    <th>রেফারেল</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminTasksSection" class="admin-section hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">টাস্ক ম্যানেজমেন্ট</h3>
+                    <button onclick="showAddTaskModal()" class="btn-primary">নতুন টাস্ক যোগ করুন</button>
+                </div>
+                <div class="card-static overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead><tr><th>টাইটেল</th><th>পুরস্কার</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+                            <tbody id="tasksTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminWithdrawsSection" class="admin-section hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">উইথড্র অনুমোদন</h3>
+                    <span class="badge badge-warning" id="pendingBadge">০ টি অপেক্ষমান</span>
+                </div>
+                <div class="card-static overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead><tr><th>ইউজার</th><th>এমাউন্ট</th><th>মেথড</th><th>একাউন্ট</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+                            <tbody id="withdrawsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminNoticesSection" class="admin-section hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">নোটিশ ম্যানেজমেন্ট</h3>
+                    <button onclick="showAddNoticeModal()" class="btn-primary">নতুন নোটিশ যোগ করুন</button>
+                </div>
+                <div id="noticesList" class="space-y-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (Withdraw, Proof, Balance, Task, Notice, Admin Login) -->
+    <!-- Kept same as previous, only necessary JS logic updated -->
+    <div id="withdrawModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">উইথড্র অনুরোধ</h3><button onclick="closeModal('withdrawModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><form id="withdrawForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-300 mb-2">এমাউন্ট</label><input type="number" id="withdrawAmount" class="input-field" placeholder="এমাউন্ট লিখুন" required min="50"></div><div><label class="block text-sm font-medium text-gray-300 mb-2">পেমেন্ট মেথড</label><select id="withdrawMethod" class="input-field" required><option value="">পেমেন্ট মেথড নির্বাচন করুন</option><option value="বিকাশ">বিকাশ</option><option value="নগদ">নগদ</option><option value="রকেট">রকেট</option></select></div><div><label class="block text-sm font-medium text-gray-300 mb-2">একাউন্ট নম্বর</label><input type="text" id="withdrawAccount" class="input-field" placeholder="একাউন্ট নম্বর লিখুন" required></div><button type="submit" class="btn-primary w-full">উইথড্র অনুরোধ করুন</button></form></div></div>
+    <div id="proofModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">টাস্ক সাবমিট করুন</h3><button onclick="closeModal('proofModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><p class="text-gray-400 mb-4" id="proofTaskTitle"></p><form id="proofForm" class="space-y-4"><input type="hidden" id="proofTaskId"><div><label class="block text-sm font-medium text-gray-300 mb-2">প্রুফ লিংক / বিবরণ</label><textarea id="proofText" class="input-field" rows="4" placeholder="আপনার কাজের প্রুফ দিন" required></textarea></div><button type="submit" class="btn-primary w-full">সাবমিট করুন</button></form></div></div>
+    <div id="balanceModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">ব্যালেন্স পরিবর্তন</h3><button onclick="closeModal('balanceModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><form id="balanceForm" class="space-y-4"><input type="hidden" id="balanceUserId"><div><label class="block text-sm font-medium text-gray-300 mb-2">এমাউন্ট</label><input type="number" id="balanceAmount" class="input-field" placeholder="এমাউন্ট লিখুন" required></div><div class="flex gap-3"><button type="button" onclick="changeBalance('add')" class="btn-primary flex-1">যোগ করুন</button><button type="button" onclick="changeBalance('deduct')" class="btn-danger flex-1">বাদ দিন</button></div></form></div></div>
+    <div id="addTaskModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">নতুন টাস্ক যোগ করুন</h3><button onclick="closeModal('addTaskModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><form id="addTaskForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-300 mb-2">টাস্ক টাইটেল</label><input type="text" id="taskTitle" class="input-field" placeholder="টাস্কের টাইটেল লিখুন" required></div><div><label class="block text-sm font-medium text-gray-300 mb-2">টাস্ক বিবরণ</label><textarea id="taskDescription" class="input-field" rows="3" placeholder="টাস্কের বিবরণ লিখুন" required></textarea></div><div><label class="block text-sm font-medium text-gray-300 mb-2">পুরস্কার (টাকা)</label><input type="number" id="taskReward" class="input-field" placeholder="পুরস্কার এমাউন্ট" required></div><button type="submit" class="btn-primary w-full">টাস্ক যোগ করুন</button></form></div></div>
+    <div id="addNoticeModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">নতুন নোটিশ যোগ করুন</h3><button onclick="closeModal('addNoticeModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><form id="addNoticeForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-300 mb-2">নোটিশ টেক্সট</label><textarea id="noticeTextInput" class="input-field" rows="4" placeholder="নোটিশ লিখুন" required></textarea></div><button type="submit" class="btn-primary w-full">নোটিশ যোগ করুন</button></form></div></div>
+    <div id="adminLoginModal" class="modal-overlay"><div class="modal-content"><div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">এডমিন লগইন</h3><button onclick="closeModal('adminLoginModal')" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><form id="adminLoginForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-300 mb-2">এডমিন পাসওয়ার্ড</label><input type="password" id="adminPassword" class="input-field" placeholder="পাসওয়ার্ড দিন" required></div><button type="submit" class="btn-primary w-full">প্রবেশ করুন</button></form></div></div>
+    <div id="toast" class="fixed top-4 right-4 z-[9999] transform translate-x-full transition-transform duration-300"><div class="card-static px-6 py-4 flex items-center gap-3"><div id="toastIcon"></div><p id="toastMessage" class="font-medium"></p></div></div>
+
+    <script>
+        const ADMIN_PASSWORD = 'admin123';
+        const REFERRAL_BONUS = 10;
+        
+        function initializeData() {
+            if (!localStorage.getItem('users')) localStorage.setItem('users', JSON.stringify([]));
+            if (!localStorage.getItem('tasks')) localStorage.setItem('tasks', JSON.stringify([
+                { id: 1, title: 'ইউটিউব ভিডিও দেখুন', description: 'পুরো ভিডিও দেখে স্ক্রিনশট দিন', reward: 5, status: 'active' },
+                { id: 2, title: 'ফেসবুক পেজ লাইক করুন', description: 'পেজ লাইক করে প্রুফ দিন', reward: 3, status: 'active' },
+                { id: 3, title: 'অ্যাপ ডাউনলোড করুন', description: 'অ্যাপ ডাউনলোড করে স্ক্রিনশট দিন', reward: 10, status: 'active' }
+            ]));
+            if (!localStorage.getItem('withdraws')) localStorage.setItem('withdraws', JSON.stringify([]));
+            if (!localStorage.getItem('transactions')) localStorage.setItem('transactions', JSON.stringify([]));
+            if (!localStorage.getItem('notices')) localStorage.setItem('notices', JSON.stringify([{ id: 1, text: 'স্বাগতম! টাস্ক সম্পন্ন করে আয় করুন।', active: true }]));
+            if (!localStorage.getItem('taskSubmissions')) localStorage.setItem('taskSubmissions', JSON.stringify([]));
+        }
+
+        function getData(key) { return JSON.parse(localStorage.getItem(key)) || []; }
+        function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            toastMessage.textContent = message;
+            if (type === 'success') toastIcon.innerHTML = '<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+            else if (type === 'error') toastIcon.innerHTML = '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            else toastIcon.innerHTML = '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => { toast.classList.add('translate-x-full'); }, 3000);
+        }
+
+        function showModal(modalId) { document.getElementById(modalId).classList.add('active'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        function formatMoney(amount) { return '৳ ' + Number(amount).toLocaleString('bn-BD'); }
+
+        let currentUser = null;
+        let isAdmin = false;
+
+        function showAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('#authPage .tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            if (tab === 'login') { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); tabs[0].classList.add('active'); }
+            else { loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); tabs[1].classList.add('active'); }
+        }
+
+        // Login Logic: Allow login with Username OR Mobile
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const users = getData('users');
+            // Find user by username OR mobile number
+            const user = users.find(u => (u.username === usernameInput || u.mobile === usernameInput) && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                isAdmin = false;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userType', 'user');
+                showUserDashboard();
+                showToast('সফলভাবে লগইন হয়েছে!');
+            } else { showToast('ইউজারনেম/মোবাইল বা পাসওয়ার্ড ভুল!', 'error'); }
+        });
+
+        // Updated Registration Logic
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 1. Device Restriction Check
+            if (localStorage.getItem('deviceRegistered')) {
+                showToast('এই ডিভাইসে ইতিমধ্যে একটি একাউন্ট তৈরি করা হয়েছে!', 'error');
+                return;
+            }
+
+            const name = document.getElementById('regName').value.trim();
+            const mobile = document.getElementById('regMobile').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const referralCode = document.getElementById('regReferral').value.trim();
+            const users = getData('users');
+            
+            // 2. Validation
+            if (password !== confirmPassword) {
+                showToast('পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না!', 'error');
+                return;
+            }
+            
+            // Simple BD Mobile validation (starts with 01, length 11)
+            if (!/^01[3-9][0-9]{8}$/.test(mobile)) {
+                showToast('সঠিক মোবাইল নম্বর দিন (০১XXXXXXXXX)', 'error');
+                return;
+            }
+
+            if (users.find(u => u.username === mobile)) { // Using mobile as username base check or just check mobile uniqueness
+                showToast('এই মোবাইল নম্বর ইতিমধ্যে নেওয়া হয়েছে!', 'error');
+                return;
+            }
+            
+            // Generate username from mobile or name
+            const username = 'user' + Math.floor(Math.random() * 9000 + 1000);
+
+            const newUser = {
+                id: Date.now(), 
+                name: name, 
+                username: username, // Auto generated username
+                mobile: mobile, // Added Mobile
+                password: password, 
+                balance: 0, 
+                referralEarning: 0,
+                referralCode: username.toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase(),
+                referredBy: null, 
+                completedTasks: [], 
+                createdAt: new Date().toISOString()
+            };
+            
+            if (referralCode) {
+                const referrer = users.find(u => u.referralCode === referralCode);
+                if (referrer) {
+                    newUser.referredBy = referrer.id;
+                    newUser.balance += REFERRAL_BONUS;
+                    referrer.balance += REFERRAL_BONUS;
+                    referrer.referralEarning += REFERRAL_BONUS;
+                    const transactions = getData('transactions');
+                    transactions.unshift({ id: Date.now(), userId: referrer.id, type: 'referral', amount: REFERRAL_BONUS, description: 'রেফারেল বোনাস', date: new Date().toISOString() });
+                    saveData('transactions', transactions);
+                    const refIndex = users.findIndex(u => u.id === referrer.id);
+                    if (refIndex !== -1) users[refIndex] = referrer;
+                }
+            }
+            
+            users.push(newUser);
+            saveData('users', users);
+
+            // Mark device as registered
+            localStorage.setItem('deviceRegistered', 'true');
+            
+            const transactions = getData('transactions');
+            if (newUser.referredBy) {
+                transactions.unshift({ id: Date.now() + 1, userId: newUser.id, type: 'bonus', amount: REFERRAL_BONUS, description: 'সাইন আপ বোনাস', date: new Date().toISOString() });
+            }
+            saveData('transactions', transactions);
+            
+            currentUser = newUser;
+            isAdmin = false;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userType', 'user');
+            
+            showUserDashboard();
+            showToast('একাউন্ট সফলভাবে তৈরি হয়েছে! আপনার ইউজারনেম: ' + username);
+        });
+
+        function showAdminLogin() { showModal('adminLoginModal'); }
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userType', 'admin');
+                closeModal('adminLoginModal');
+                showAdminDashboard();
+                showToast('এডমিন প্যানেলে স্বাগতম!');
+            } else { showToast('ভুল পাসওয়ার্ড!', 'error'); }
+        });
+
+        function logout() {
+            currentUser = null; isAdmin = false;
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userType');
+            // Note: We do NOT remove 'deviceRegistered' on logout so they cannot create a new account.
+            document.getElementById('authPage').classList.remove('hidden');
+            document.getElementById('userDashboard').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            showToast('সফলভাবে লগআউট হয়েছে!');
+        }
+
+        function showUserDashboard() {
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('userDashboard').classList.remove('hidden');
+            loadUserDashboard();
+        }
+
+        function loadUserDashboard() {
+            const users = getData('users');
+            currentUser = users.find(u => u.id === currentUser.id) || currentUser;
+            document.getElementById('welcomeUser').textContent = 'স্বাগতম, ' + currentUser.name;
+            document.getElementById('userBalance').textContent = formatMoney(currentUser.balance);
+            document.getElementById('referralEarning').textContent = formatMoney(currentUser.referralEarning || 0);
+            document.getElementById('totalTasks').textContent = (currentUser.completedTasks || []).length + ' টি';
+            document.getElementById('referralCode').textContent = currentUser.referralCode;
+            
+            const notices = getData('notices');
+            const activeNotice = notices.find(n => n.active);
+            if (activeNotice) {
+                document.getElementById('userNotice').classList.remove('hidden');
+                document.getElementById('noticeTextUser').textContent = activeNotice.text;
+            } else { document.getElementById('userNotice').classList.add('hidden'); }
+            loadTasks();
+        }
+
+        function loadTasks() {
+            const tasks = getData('tasks');
+            const activeTasks = tasks.filter(t => t.status === 'active');
+            const submissions = getData('taskSubmissions');
+            const tasksList = document.getElementById('tasksList');
+            document.getElementById('taskCount').textContent = activeTasks.length + ' টি টাস্ক';
+            if (activeTasks.length === 0) { tasksList.innerHTML = '<div class="text-center py-8 text-gray-400">কোনো টাস্ক নেই</div>'; return; }
+            tasksList.innerHTML = activeTasks.map(task => {
+                const userSubmission = submissions.find(s => s.taskId === task.id && s.userId === currentUser.id);
+                const isCompleted = currentUser.completedTasks && currentUser.completedTasks.includes(task.id);
+                const isPending = userSubmission && userSubmission.status === 'pending';
+                return `<div class="task-card"><div class="flex items-start justify-between mb-3"><div><h4 class="font-semibold text-lg">${task.title}</h4><p class="text-gray-400 text-sm mt-1">${task.description}</p></div><span class="badge badge-success">${formatMoney(task.reward)}</span></div><div class="flex items-center justify-between">${isCompleted ? '<span class="badge badge-success">সম্পন্ন</span>' : isPending ? '<span class="badge badge-warning">অপেক্ষমান</span>' : `<button onclick="showProofModal(${task.id}, '${task.title}')" class="btn-primary text-sm py-2 px-4">সাবমিট করুন</button>`}</div></div>`;
+            }).join('');
+        }
+
+        function showProofModal(taskId, taskTitle) { document.getElementById('proofTaskId').value = taskId; document.getElementById('proofTaskTitle').textContent = 'টাস্ক: ' + taskTitle; document.getElementById('proofText').value = ''; showModal('proofModal'); }
+        document.getElementById('proofForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const taskId = parseInt(document.getElementById('proofTaskId').value);
+            const proofText = document.getElementById('proofText').value.trim();
+            const submissions = getData('taskSubmissions');
+            submissions.push({ id: Date.now(), taskId: taskId, userId: currentUser.id, userName: currentUser.name, proof: proofText, status: 'pending', submittedAt: new Date().toISOString() });
+            saveData('taskSubmissions', submissions);
+            closeModal('proofModal');
+            showToast('টাস্ক সাবমিট হয়েছে! অনুমোদনের জন্য অপেক্ষা করুন।');
+            loadTasks();
+        });
+
+        function showWithdrawModal() { document.getElementById('withdrawAmount').value = ''; document.getElementById('withdrawMethod').value = ''; document.getElementById('withdrawAccount').value = ''; showModal('withdrawModal'); }
+        document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const account = document.getElementById('withdrawAccount').value.trim();
+            const users = getData('users');
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            currentUser = users[userIndex];
+            if (amount < 50) { showToast('সর্বনিম্ন উইথড্র ৫০ টাকা!', 'error'); return; }
+            if (currentUser.balance < amount) { showToast('অপর্যাপ্ত ব্যালেন্স!', 'error'); return; }
+            currentUser.balance -= amount;
+            users[userIndex] = currentUser;
+            saveData('users', users);
+            const withdraws = getData('withdraws');
+            withdraws.unshift({ id: Date.now(), userId: currentUser.id, userName: currentUser.name, amount: amount, method: method, account: account, status: 'pending', requestedAt: new Date().toISOString() });
+            saveData('withdraws', withdraws);
+            const transactions = getData('transactions');
+            transactions.unshift({ id: Date.now(), userId: currentUser.id, type: 'withdraw', amount: -amount, description: method + ' - ' + account, status: 'pending', date: new Date().toISOString() });
+            saveData('transactions', transactions);
+            closeModal('withdrawModal');
+            loadUserDashboard();
+            showToast('উইথড্র অনুরোধ সফল! অনুমোদনের জন্য অপেক্ষা করুন।');
+        });
+
+        function showUserSection(section) {
+            if (section === 'tasks') { document.getElementById('tasksSection').classList.remove('hidden'); document.getElementById('historySection').classList.add('hidden'); }
+            else if (section === 'history') { document.getElementById('tasksSection').classList.add('hidden'); document.getElementById('historySection').classList.remove('hidden'); loadHistory(); }
+        }
+        function loadHistory() {
+            const transactions = getData('transactions');
+            const userTransactions = transactions.filter(t => t.userId === currentUser.id);
+            const historyList = document.getElementById('historyList');
+            if (userTransactions.length === 0) { historyList.innerHTML = '<div class="text-center py-8 text-gray-400">কোনো লেনদেন নেই</div>'; return; }
+            historyList.innerHTML = userTransactions.map(t => {
+                const isPositive = t.amount > 0;
+                const statusBadge = t.status === 'pending' ? '<span class="badge badge-warning text-xs">অপেক্ষমান</span>' : t.status === 'approved' ? '<span class="badge badge-success text-xs">অনুমোদিত</span>' : '';
+                return `<div class="card-static p-4 flex items-center justify-between"><div><p class="font-medium">${t.description}</p><p class="text-xs text-gray-400 mt-1">${new Date(t.date).toLocaleDateString('bn-BD')} ${new Date(t.date).toLocaleTimeString('bn-BD')}</p></div><div class="text-right"><p class="font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}">${isPositive ? '+' : ''}${formatMoney(t.amount)}</p>${statusBadge}</div></div>`;
+            }).join('');
+        }
+        function copyReferral() { navigator.clipboard.writeText(currentUser.referralCode); showToast('রেফারেল কোড কপি হয়েছে!'); }
+
+        function showAdminDashboard() {
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('userDashboard').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadAdminDashboard();
+        }
+        function loadAdminDashboard() {
+            const users = getData('users');
+            const tasks = getData('tasks');
+            const withdraws = getData('withdraws');
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('totalTasksAdmin').textContent = tasks.filter(t => t.status === 'active').length;
+            document.getElementById('pendingWithdraws').textContent = withdraws.filter(w => w.status === 'pending').length;
+            const totalWithdrawn = withdraws.filter(w => w.status === 'approved').reduce((sum, w) => sum + w.amount, 0);
+            document.getElementById('totalWithdraws').textContent = formatMoney(totalWithdrawn);
+            const transactions = getData('transactions');
+            const recentActivity = document.getElementById('recentActivity');
+            if (transactions.length === 0) { recentActivity.innerHTML = '<div class="text-center py-4 text-gray-400">কোনো কার্যকলাপ নেই</div>'; }
+            else {
+                recentActivity.innerHTML = transactions.slice(0, 10).map(t => {
+                    const user = users.find(u => u.id === t.userId);
+                    return `<div class="flex items-center justify-between py-2 border-b border-gray-800"><div><p class="font-medium">${user ? user.name : 'অজানা'}</p><p class="text-xs text-gray-400">${t.description}</p></div><span class="${t.amount > 0 ? 'text-emerald-400' : 'text-red-400'} font-semibold">${t.amount > 0 ? '+' : ''}${formatMoney(t.amount)}</span></div>`;
+                }).join('');
+            }
+            checkTaskSubmissions();
+        }
+        function showAdminSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${section}"]`).classList.add('active');
+            if (section === 'dashboard') { document.getElementById('adminDashboardSection').classList.remove('hidden'); loadAdminDashboard(); }
+            else if (section === 'users') { document.getElementById('adminUsersSection').classList.remove('hidden'); loadUsersTable(); }
+            else if (section === 'tasks') { document.getElementById('adminTasksSection').classList.remove('hidden'); loadTasksTable(); }
+            else if (section === 'withdraws') { document.getElementById('adminWithdrawsSection').classList.remove('hidden'); loadWithdrawsTable(); }
+            else if (section === 'notices') { document.getElementById('adminNoticesSection').classList.remove('hidden'); loadNotices(); }
+        }
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchUserInput').value.toLowerCase().trim();
+            loadUsersTable(searchTerm);
+        }
+        // Updated User Table to include Mobile
+        function loadUsersTable(searchTerm = '') {
+            const users = getData('users');
+            document.getElementById('userCountBadge').textContent = users.length + ' জন ইউজার';
+            const tbody = document.getElementById('usersTableBody');
+            let filteredUsers = users;
+            if (searchTerm) {
+                filteredUsers = users.filter(u => 
+                    u.name.toLowerCase().includes(searchTerm) || 
+                    u.username.toLowerCase().includes(searchTerm) ||
+                    (u.mobile && u.mobile.includes(searchTerm))
+                );
+            }
+            if (filteredUsers.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">কোনো ইউজার পাওয়া যায়নি</td></tr>'; return; }
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr>
+                    <td class="font-medium">${user.name}</td>
+                    <td class="text-gray-400">${user.username}</td>
+                    <td class="text-blue-400">${user.mobile || 'N/A'}</td>
+                    <td class="text-emerald-400 font-semibold">${formatMoney(user.balance)}</td>
+                    <td class="text-xs text-gray-500">${user.referralCode}</td>
+                    <td>
+                        <button onclick="showBalanceModal(${user.id})" class="btn-secondary text-xs py-1 px-3">ব্যালেন্স</button>
+                        <button onclick="deleteUser(${user.id})" class="btn-danger text-xs py-1 px-3 ml-2">মুছুন</button>
+                    </td>
+                </tr>`).join('');
+        }
+        function showBalanceModal(userId) { document.getElementById('balanceUserId').value = userId; document.getElementById('balanceAmount').value = ''; showModal('balanceModal'); }
+        function changeBalance(action) {
+            const userId = parseInt(document.getElementById('balanceUserId').value);
+            const amount = parseFloat(document.getElementById('balanceAmount').value);
+            if (!amount || amount <= 0) { showToast('সঠিক এমাউন্ট দিন!', 'error'); return; }
+            const users = getData('users');
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) { showToast('ইউজার পাওয়া যায়নি!', 'error'); return; }
+            if (action === 'add') { users[userIndex].balance += amount; }
+            else { if (users[userIndex].balance < amount) { showToast('অপর্যাপ্ত ব্যালেন্স!', 'error'); return; } users[userIndex].balance -= amount; }
+            saveData('users', users);
+            const transactions = getData('transactions');
+            transactions.unshift({ id: Date.now(), userId: userId, type: action === 'add' ? 'admin_add' : 'admin_deduct', amount: action === 'add' ? amount : -amount, description: action === 'add' ? 'এডমিন কর্তৃক যোগ' : 'এডমিন কর্তৃক বাদ', status: 'approved', date: new Date().toISOString() });
+            saveData('transactions', transactions);
+            closeModal('balanceModal');
+            loadUsersTable();
+            showToast('ব্যালেন্স আপডেট হয়েছে!');
+        }
+        function deleteUser(userId) {
+            if (!confirm('আপনি কি এই ইউজার মুছে ফেলতে চান?')) return;
+            const users = getData('users');
+            const filtered = users.filter(u => u.id !== userId);
+            saveData('users', filtered);
+            loadUsersTable();
+            showToast('ইউজার মুছে ফেলা হয়েছে!');
+        }
+        function loadTasksTable() {
+            const tasks = getData('tasks');
+            const tbody = document.getElementById('tasksTableBody');
+            if (tasks.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">কোনো টাস্ক নেই</td></tr>'; return; }
+            tbody.innerHTML = tasks.map(task => `<tr><td><p class="font-medium">${task.title}</p><p class="text-xs text-gray-400">${task.description}</p></td><td class="text-emerald-400 font-semibold">${formatMoney(task.reward)}</td><td><span class="badge ${task.status === 'active' ? 'badge-success' : 'badge-danger'}">${task.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span></td><td><button onclick="toggleTask(${task.id})" class="btn-secondary text-xs py-1 px-3">${task.status === 'active' ? 'নিষ্ক্রিয়' : 'সক্রিয়'} করুন</button><button onclick="deleteTask(${task.id})" class="btn-danger text-xs py-1 px-3 ml-2">মুছুন</button></td></tr>`).join('');
+        }
+        function showAddTaskModal() { document.getElementById('taskTitle').value = ''; document.getElementById('taskDescription').value = ''; document.getElementById('taskReward').value = ''; showModal('addTaskModal'); }
+        document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const reward = parseFloat(document.getElementById('taskReward').value);
+            const tasks = getData('tasks');
+            tasks.push({ id: Date.now(), title: title, description: description, reward: reward, status: 'active' });
+            saveData('tasks', tasks);
+            closeModal('addTaskModal');
+            loadTasksTable();
+            showToast('টাস্ক যোগ হয়েছে!');
+        });
+        function toggleTask(taskId) { const tasks = getData('tasks'); const taskIndex = tasks.findIndex(t => t.id === taskId); if (taskIndex !== -1) { tasks[taskIndex].status = tasks[taskIndex].status === 'active' ? 'inactive' : 'active'; saveData('tasks', tasks); loadTasksTable(); showToast('টাস্ক আপডেট হয়েছে!'); } }
+        function deleteTask(taskId) { if (!confirm('আপনি কি এই টাস্ক মুছে ফেলতে চান?')) return; const tasks = getData('tasks'); const filtered = tasks.filter(t => t.id !== taskId); saveData('tasks', filtered); loadTasksTable(); showToast('টাস্ক মুছে ফেলা হয়েছে!'); }
+        function loadWithdrawsTable() { const withdraws = getData('withdraws'); document.getElementById('pendingBadge').textContent = withdraws.filter(w => w.status === 'pending').length + ' টি অপেক্ষমান'; const tbody = document.getElementById('withdrawsTableBody'); if (withdraws.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">কোনো উইথড্র নেই</td></tr>'; return; } tbody.innerHTML = withdraws.map(w => `<tr><td class="font-medium">${w.userName}</td><td class="text-emerald-400 font-semibold">${formatMoney(w.amount)}</td><td class="text-blue-400">${w.method}</td><td class="text-gray-400">${w.account}</td><td><span class="badge ${w.status === 'pending' ? 'badge-warning' : w.status === 'approved' ? 'badge-success' : 'badge-danger'}">${w.status === 'pending' ? 'অপেক্ষমান' : w.status === 'approved' ? 'অনুমোদিত' : 'বাতিল'}</span></td><td>${w.status === 'pending' ? `<button onclick="approveWithdraw(${w.id})" class="btn-primary text-xs py-1 px-3">অনুমোদন</button><button onclick="rejectWithdraw(${w.id})" class="btn-danger text-xs py-1 px-3 ml-2">বাতিল</button>` : '-'}</td></tr>`).join(''); }
+        function approveWithdraw(withdrawId) { const withdraws = getData('withdraws'); const withdrawIndex = withdraws.findIndex(w => w.id === withdrawId); if (withdrawIndex === -1) return; withdraws[withdrawIndex].status = 'approved'; withdraws[withdrawIndex].approvedAt = new Date().toISOString(); saveData('withdraws', withdraws); const transactions = getData('transactions'); const txIndex = transactions.findIndex(t => t.userId === withdraws[withdrawIndex].userId && t.amount === -withdraws[withdrawIndex].amount && t.status === 'pending'); if (txIndex !== -1) { transactions[txIndex].status = 'approved'; saveData('transactions', transactions); } loadWithdrawsTable(); loadAdminDashboard(); showToast('উইথড্র অনুমোদিত হয়েছে!'); }
+        function rejectWithdraw(withdrawId) { const withdraws = getData('withdraws'); const withdrawIndex = withdraws.findIndex(w => w.id === withdrawId); if (withdrawIndex === -1) return; const users = getData('users'); const userIndex = users.findIndex(u => u.id === withdraws[withdrawIndex].userId); if (userIndex !== -1) { users[userIndex].balance += withdraws[withdrawIndex].amount; saveData('users', users); } withdraws[withdrawIndex].status = 'rejected'; withdraws[withdrawIndex].rejectedAt = new Date().toISOString(); saveData('withdraws', withdraws); const transactions = getData('transactions'); const txIndex = transactions.findIndex(t => t.userId === withdraws[withdrawIndex].userId && t.amount === -withdraws[withdrawIndex].amount && t.status === 'pending'); if (txIndex !== -1) { transactions[txIndex].status = 'rejected'; transactions[txIndex].amount = withdraws[withdrawIndex].amount; transactions[txIndex].description = 'উইথড্র বাতিল - ' + withdraws[withdrawIndex].method; saveData('transactions', transactions); } loadWithdrawsTable(); loadAdminDashboard(); showToast('উইথড্র বাতিল হয়েছে এবং টাকা ফেরত দেওয়া হয়েছে!'); }
+        function loadNotices() { const notices = getData('notices'); const noticesList = document.getElementById('noticesList'); if (notices.length === 0) { noticesList.innerHTML = '<div class="text-center py-8 text-gray-400">কোনো নোটিশ নেই</div>'; return; } noticesList.innerHTML = notices.map(notice => `<div class="card-static p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg ${notice.active ? 'bg-amber-500/20' : 'bg-gray-500/20'} flex items-center justify-center"><svg class="w-5 h-5 ${notice.active ? 'text-amber-400' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg></div><div><p class="font-medium">${notice.text}</p><span class="badge ${notice.active ? 'badge-success' : 'badge-danger'} text-xs mt-1">${notice.active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span></div></div><div class="flex gap-2"><button onclick="toggleNotice(${notice.id})" class="btn-secondary text-xs py-1 px-3">${notice.active ? 'নিষ্ক্রিয়' : 'সক্রিয়'} করুন</button><button onclick="deleteNotice(${notice.id})" class="btn-danger text-xs py-1 px-3">মুছুন</button></div></div>`).join(''); }
+        function showAddNoticeModal() { document.getElementById('noticeTextInput').value = ''; showModal('addNoticeModal'); }
+        document.getElementById('addNoticeForm').addEventListener('submit', function(e) { e.preventDefault(); const text = document.getElementById('noticeTextInput').value.trim(); const notices = getData('notices'); notices.push({ id: Date.now(), text: text, active: true }); saveData('notices', notices); closeModal('addNoticeModal'); loadNotices(); showToast('নোটিশ যোগ হয়েছে!'); });
+        function toggleNotice(noticeId) { const notices = getData('notices'); const noticeIndex = notices.findIndex(n => n.id === noticeId); if (noticeIndex !== -1) { notices[noticeIndex].active = !notices[noticeIndex].active; saveData('notices', notices); loadNotices(); showToast('নোটিশ আপডেট হয়েছে!'); } }
+        function deleteNotice(noticeId) { if (!confirm('আপনি কি এই নোটিশ মুছে ফেলতে চান?')) return; const notices = getData('notices'); const filtered = notices.filter(n => n.id !== noticeId); saveData('notices', filtered); loadNotices(); showToast('নোটিশ মুছে ফেলা হয়েছে!'); }
+        function checkTaskSubmissions() { const submissions = getData('taskSubmissions'); const pendingSubmissions = submissions.filter(s => s.status === 'pending'); if (pendingSubmissions.length > 0) { const recentActivity = document.getElementById('recentActivity'); const currentHTML = recentActivity.innerHTML; const pendingHTML = pendingSubmissions.slice(0, 5).map(s => `<div class="flex items-center justify-between py-2 border-b border-amber-900/50 bg-amber-500/5 -mx-4 px-4"><div><p class="font-medium">${s.userName}</p><p class="text-xs text-amber-400">টাস্ক সাবমিট করেছে</p></div><div class="flex gap-2"><button onclick="approveTaskSubmission(${s.id})" class="btn-primary text-xs py-1 px-2">অনুমোদন</button><button onclick="rejectTaskSubmission(${s.id})" class="btn-danger text-xs py-1 px-2">বাতিল</button></div></div>`).join(''); recentActivity.innerHTML = pendingHTML + currentHTML; } }
+        function approveTaskSubmission(submissionId) { const submissions = getData('taskSubmissions'); const subIndex = submissions.findIndex(s => s.id === submissionId); if (subIndex === -1) return; const submission = submissions[subIndex]; const tasks = getData('tasks'); const task = tasks.find(t => t.id === submission.taskId); if (!task) return; submissions[subIndex].status = 'approved'; submissions[subIndex].approvedAt = new Date().toISOString(); saveData('taskSubmissions', submissions); const users = getData('users'); const userIndex = users.findIndex(u => u.id === submission.userId); if (userIndex !== -1) { users[userIndex].balance += task.reward; if (!users[userIndex].completedTasks) users[userIndex].completedTasks = []; users[userIndex].completedTasks.push(submission.taskId); saveData('users', users); } const transactions = getData('transactions'); transactions.unshift({ id: Date.now(), userId: submission.userId, type: 'task', amount: task.reward, description: 'টাস্ক পুরস্কার: ' + task.title, status: 'approved', date: new Date().toISOString() }); saveData('transactions', transactions); loadAdminDashboard(); showToast('টাস্ক অনুমোদিত হয়েছে!'); }
+        function rejectTaskSubmission(submissionId) { const submissions = getData('taskSubmissions'); const subIndex = submissions.findIndex(s => s.id === submissionId); if (subIndex === -1) return; submissions[subIndex].status = 'rejected'; submissions[subIndex].rejectedAt = new Date().toISOString(); saveData('taskSubmissions', submissions); loadAdminDashboard(); showToast('টাস্ক বাতিল হয়েছে!'); }
+
+        function init() {
+            initializeData();
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userType = localStorage.getItem('userType');
+            const savedUser = localStorage.getItem('currentUser');
+            if (isLoggedIn && userType === 'admin') { isAdmin = true; showAdminDashboard(); }
+            else if (isLoggedIn && savedUser) { currentUser = JSON.parse(savedUser); const users = getData('users'); const freshUser = users.find(u => u.id === currentUser.id); if (freshUser) { currentUser = freshUser; showUserDashboard(); } else { logout(); } }
+            else { document.getElementById('authPage').classList.remove('hidden'); }
+            setInterval(() => { if (isAdmin) checkTaskSubmissions(); }, 5000);
+        }
+
+        init();
+        window.addEventListener('storage', function(e) { if (currentUser && !isAdmin) loadUserDashboard(); if (isAdmin) loadAdminDashboard(); });
+    </script>
+</body>
+</html>
